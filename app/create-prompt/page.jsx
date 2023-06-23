@@ -1,16 +1,23 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-
 import Form from '@components/Form';
+import Image from '@node_modules/next/image';
+import { toastError, toastSuccess } from '@helpers/notifications';
 
 function CreatePrompt() {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
 
   const [submitting, setSubmitting] = useState(false);
   const [post, setPost] = useState({ prompt: '', tag: '' });
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/');
+    }
+  }, [status]);
 
   const createPrompt = async e => {
     e.preventDefault();
@@ -28,16 +35,17 @@ function CreatePrompt() {
       });
 
       if (res.ok) {
+        toastSuccess('Successfully added! Redirected to main page');
         router.push('/');
       }
     } catch (e) {
-      console.log(e);
+      toastError(e.message);
     } finally {
       setSubmitting(false);
     }
   };
 
-  return (
+  return status !== 'loading' && status === 'authenticated' ? (
     <Form
       type="Create"
       post={post}
@@ -45,6 +53,16 @@ function CreatePrompt() {
       submitting={submitting}
       handleSubmit={createPrompt}
     />
+  ) : (
+    <div className="w-full flex-center">
+      <Image
+        src="assets/icons/loader.svg"
+        width={50}
+        height={50}
+        alt="loader"
+        className="object-contain"
+      />
+    </div>
   );
 }
 

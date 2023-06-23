@@ -1,4 +1,6 @@
+import { ToastContainer } from 'react-toastify';
 import '@styles/global.css';
+import 'react-toastify/dist/ReactToastify.css';
 import Nav from '@components/Nav';
 import Provider from '@components/Provider';
 
@@ -19,6 +21,7 @@ function RootLayout({ children }) {
             <Nav />
             {children}
           </main>
+          <ToastContainer />
         </Provider>
       </body>
     </html>

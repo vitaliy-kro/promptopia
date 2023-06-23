@@ -4,24 +4,30 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Profile from '@components/Profile';
+import Loader from '@components/Loader';
 
 function MyProfile() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+
   const router = useRouter();
   const [posts, setPosts] = useState([]);
 
   useEffect(() => {
     const fetchPosts = async () => {
-      const res = await fetch(`/api/users/${session?.user.id}/posts`);
+      const res = await fetch(`/api/users/${session.user.id}/posts`);
       const data = await res.json();
 
       setPosts(data);
     };
 
-    if (session?.user.id) {
+    if (status === 'authenticated') {
       fetchPosts();
     }
-  }, []);
+
+    if (status === 'unauthenticated') {
+      router.push('/');
+    }
+  }, [status]);
   const handleEdit = post => {
     router.push(`/update-prompt?id=${post._id}`);
   };
@@ -45,7 +51,7 @@ function MyProfile() {
     }
   };
 
-  return (
+  return status !== 'loading' && status === 'authenticated' ? (
     <Profile
       name="My"
       description="Welcome to your personalized profile page"
@@ -53,6 +59,8 @@ function MyProfile() {
       handleEdit={handleEdit}
       handleDelete={handleDelete}
     />
+  ) : (
+    <Loader />
   );
 }
 
