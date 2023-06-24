@@ -4,21 +4,27 @@ import { useState, useEffect } from 'react';
 import PromptCardList from '@components/PromptCardList';
 
 function Feed() {
+  const [page, setPage] = useState(1);
   const [searchText, setSearchText] = useState('');
   const [searchTimeout, setSearchTimeout] = useState(null);
   const [searchedResults, setSearchedResults] = useState([]);
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState({});
 
   useEffect(() => {
     const fetchPosts = async () => {
-      const res = await fetch('/api/prompt');
+      const res = await fetch(`/api/prompt?page=${page}`);
       const data = await res.json();
 
-      setPosts(data);
+      setPosts(prevState => {
+        return {
+          prompts: [...(prevState?.prompts ?? []), ...data.prompts],
+          totalPages: data.totalPages,
+        };
+      });
     };
 
     fetchPosts();
-  }, []);
+  }, [page]);
 
   const filterPrompts = searchtext => {
     const regex = new RegExp(searchtext, 'i');
@@ -30,11 +36,13 @@ function Feed() {
     );
   };
 
+  const handleLoadMore = e => {
+    setPage(prevState => prevState + 1);
+  };
   const handleSearchChange = e => {
     clearTimeout(searchTimeout);
     setSearchText(e.target.value);
 
-    // debounce method
     setSearchTimeout(
       setTimeout(() => {
         const searchResult = filterPrompts(e.target.value);
@@ -63,12 +71,25 @@ function Feed() {
         />
       </form>
       {searchText ? (
-        <PromptCardList
-          data={searchedResults}
-          handleTagClick={handleTagClick}
-        />
+        <>
+          <PromptCardList
+            data={searchedResults}
+            handleTagClick={handleTagClick}
+          />
+        </>
       ) : (
-        <PromptCardList data={posts} handleTagClick={handleTagClick} />
+        <>
+          <PromptCardList
+            data={posts}
+            handleTagClick={handleTagClick}
+            page={page}
+          />
+          {posts.prompts && page !== posts.totalPages && (
+            <button className="outline_btn" onClick={handleLoadMore}>
+              Load More
+            </button>
+          )}
+        </>
       )}
     </section>
   );
