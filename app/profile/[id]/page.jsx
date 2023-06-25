@@ -9,7 +9,7 @@ const UserProfile = ({ params }) => {
   const searchParams = useSearchParams();
   const userName = searchParams.get('name');
 
-  const [userPosts, setUserPosts] = useState([]);
+  const [userPosts, setUserPosts] = useState({});
   const [page, setPage] = useState(1);
 
   useEffect(() => {

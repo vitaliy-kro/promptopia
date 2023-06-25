@@ -11,7 +11,7 @@ function MyProfile() {
   const { data: session, status } = useSession();
 
   const router = useRouter();
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState({});
   const [page, setPage] = useState(1);
 
   useEffect(() => {
