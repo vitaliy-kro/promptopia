@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import Form from '@components/Form';
 import Image from '@node_modules/next/image';
 import { toastError, toastSuccess } from '@helpers/notifications';
+import { ROUTER_KEYS } from '@consts';
 
 function CreatePrompt() {
   const router = useRouter();
@@ -36,7 +37,7 @@ function CreatePrompt() {
 
       if (res.ok) {
         toastSuccess('Successfully added! Redirected to main page');
-        router.push('/');
+        router.push(ROUTER_KEYS.HOME);
       }
     } catch (e) {
       toastError(e.message);

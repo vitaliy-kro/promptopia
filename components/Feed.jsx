@@ -12,6 +12,18 @@ function Feed() {
 
   useEffect(() => {
     const fetchPosts = async () => {
+      if (searchText) {
+        return setSearchTimeout(
+          setTimeout(async () => {
+            const res = await fetch(
+              `/api/prompt?page=${page}&searchText=${searchText}`
+            );
+            const data = await res.json();
+            setSearchedResults(data);
+          }, 500)
+        );
+      }
+
       const res = await fetch(`/api/prompt?page=${page}`);
       const data = await res.json();
 
@@ -24,38 +36,19 @@ function Feed() {
     };
 
     fetchPosts();
-  }, [page]);
+  }, [page, searchText]);
 
-  const filterPrompts = searchtext => {
-    const regex = new RegExp(searchtext, 'i');
-    return posts.filter(
-      item =>
-        regex.test(item.creator.username) ||
-        regex.test(item.tag) ||
-        regex.test(item.prompt)
-    );
-  };
-
-  const handleLoadMore = e => {
+  const handleLoadMore = () => {
     setPage(prevState => prevState + 1);
   };
   const handleSearchChange = e => {
     clearTimeout(searchTimeout);
     setSearchText(e.target.value);
-
-    setSearchTimeout(
-      setTimeout(() => {
-        const searchResult = filterPrompts(e.target.value);
-        setSearchedResults(searchResult);
-      }, 500)
-    );
+    setPage(1);
   };
 
   const handleTagClick = tagName => {
     setSearchText(tagName);
-
-    const searchResult = filterPrompts(tagName);
-    setSearchedResults(searchResult);
   };
 
   return (

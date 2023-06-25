@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import Form from '@components/Form';
+import Loader from '@components/Loader';
+import { ROUTER_KEYS } from '@consts';
 
 function EditPrompt() {
   const router = useRouter();
@@ -14,10 +16,15 @@ function EditPrompt() {
 
   useEffect(() => {
     const getPromptDetails = async () => {
-      const response = await fetch(`/api/prompt/${promptId}`);
-      const data = await response.json();
+      try {
+        const response = await fetch(`/api/prompt/${promptId}`);
 
-      setPost({ prompt: data.prompt, tag: data.tag });
+        const data = await response.json();
+        console.log(data);
+        setPost({ prompt: data.prompt, tag: data.tag });
+      } catch (e) {
+        router.push(ROUTER_KEYS.HOME);
+      }
     };
 
     if (promptId) getPromptDetails();
@@ -39,7 +46,7 @@ function EditPrompt() {
       });
 
       if (res.ok) {
-        router.push('/');
+        router.push(ROUTER_KEYS.HOME);
       }
     } catch (e) {
       console.log(e);
@@ -48,7 +55,7 @@ function EditPrompt() {
     }
   };
 
-  return (
+  return post.prompt && post.tag ? (
     <Form
       type="Edit"
       post={post}
@@ -56,6 +63,8 @@ function EditPrompt() {
       submitting={submitting}
       handleSubmit={updatePrompt}
     />
+  ) : (
+    <Loader />
   );
 }
 

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { usePathname, useRouter } from 'next/navigation';
+import { ROUTER_KEYS } from '@consts';
 
 function PromptCard({ post, handleTagClick, handleEdit, handleDelete }) {
   const { data: session } = useSession();
@@ -22,9 +23,12 @@ function PromptCard({ post, handleTagClick, handleEdit, handleDelete }) {
   const handleProfileClick = () => {
     console.log(post);
 
-    if (post.creator._id === session?.user.id) return router.push('/profile');
+    if (post.creator._id === session?.user.id)
+      return router.push(ROUTER_KEYS.PROFILE);
 
-    router.push(`/profile/${post.creator._id}?name=${post.creator.username}`);
+    router.push(
+      `${ROUTER_KEYS.PROFILE}/${post.creator._id}?name=${post.creator.username}`
+    );
   };
 
   return (
