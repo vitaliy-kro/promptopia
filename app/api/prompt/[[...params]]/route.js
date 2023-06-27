@@ -1,5 +1,6 @@
 import { connectToDB } from '@utils/database';
 import Prompt from '@models/prompt';
+import User from '@models/user';
 
 export const GET = async req => {
   try {
@@ -13,15 +14,23 @@ export const GET = async req => {
     await connectToDB();
 
     const regex = new RegExp(searchText, 'i');
-    const prompts = await Prompt.find({
-      $or: [{ tag: { $regex: regex } }, { prompt: { $regex: regex } }],
-    })
+
+    const query = {
+      $or: [
+        { tag: { $regex: regex } },
+        { prompt: { $regex: regex } },
+        {
+          creator: {
+            $in: await User.find({ name: { $regex: regex } }).distinct('_id'),
+          },
+        },
+      ],
+    };
+    const prompts = await Prompt.find(query)
       .populate('creator')
       .skip(skip)
       .limit(limit);
-    const countPages = await Prompt.countDocuments({
-      $or: [{ tag: { $regex: regex } }, { prompt: { $regex: regex } }],
-    });
+    const countPages = await Prompt.countDocuments(query);
 
     return new Response(
       JSON.stringify({ prompts, totalPages: Math.ceil(countPages / limit) }),
