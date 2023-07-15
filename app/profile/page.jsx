@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Profile from '@components/Profile';
 import Loader from '@components/Loader';
 import { ROUTER_KEYS } from '@consts';
+import { PostsSkeleton } from '@components/PostsSkeleton';
 
 function MyProfile() {
   const { data: session, status } = useSession();
@@ -13,9 +14,11 @@ function MyProfile() {
   const router = useRouter();
   const [posts, setPosts] = useState({});
   const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchPosts = async () => {
+      setIsLoading(true);
       const res = await fetch(
         `/api/users/${session.user.id}/posts?page=${page}`
       );
@@ -27,6 +30,7 @@ function MyProfile() {
           totalPages: data.totalPages,
         };
       });
+      setIsLoading(false);
     };
 
     if (status === 'authenticated') {
@@ -78,7 +82,7 @@ function MyProfile() {
           Load More
         </button>
       )}
-      ;
+      {isLoading && <PostsSkeleton />};
     </>
   ) : (
     <Loader />

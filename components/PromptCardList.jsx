@@ -1,10 +1,8 @@
 import PromptCard from '@components/PromptCard';
-import Loader from '@components/Loader';
-
 const PromptCardList = ({ data, handleTagClick }) => {
   return (
     <div className="mt-16 prompt_layout">
-      {data?.prompts?.length ? (
+      {data?.prompts?.length && (
         <>
           {data.prompts.map(post => (
             <PromptCard
@@ -14,8 +12,6 @@ const PromptCardList = ({ data, handleTagClick }) => {
             />
           ))}
         </>
-      ) : (
-        <Loader />
       )}
     </div>
   );

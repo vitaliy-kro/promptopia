@@ -21,8 +21,6 @@ function PromptCard({ post, handleTagClick, handleEdit, handleDelete }) {
   };
 
   const handleProfileClick = () => {
-    console.log(post);
-
     if (post.creator._id === session?.user.id)
       return router.push(ROUTER_KEYS.PROFILE);
 

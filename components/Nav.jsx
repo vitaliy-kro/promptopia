@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { getProviders, signIn, signOut, useSession } from 'next-auth/react';
 
 function Nav() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
 
   const [providers, setProviders] = useState(null);
   const [toggleDropDown, setToggleDropDown] = useState(false);
@@ -31,98 +31,102 @@ function Nav() {
         />
         <p className="logo text">Promptopia</p>
       </Link>
-      <div className="sm:flex hidden">
-        {session?.user ? (
-          <div className="flex gap-3 md:gap-5">
-            <Link href="/create-prompt" className="black_btn">
-              Create Post
-            </Link>
-            <button type="button" onClick={signOut} className="outline_btn">
-              Sign Out
-            </button>
-            <Link href="/profile">
+      {status !== 'loading' && (
+        <div className="sm:flex hidden">
+          {status === 'authenticated' ? (
+            <div className="flex gap-3 md:gap-5">
+              <Link href="/create-prompt" className="black_btn">
+                Create Post
+              </Link>
+              <button type="button" onClick={signOut} className="outline_btn">
+                Sign Out
+              </button>
+              <Link href="/profile">
+                <Image
+                  src={session?.user.image}
+                  width={37}
+                  height={37}
+                  className="rounded-full"
+                  alt="profile"
+                />
+              </Link>
+            </div>
+          ) : (
+            <>
+              {providers &&
+                Object.values(providers).map(provider => (
+                  <button
+                    type="button"
+                    key={provider.name}
+                    onClick={() => signIn(provider.id)}
+                    className="black_btn"
+                  >
+                    Sign In
+                  </button>
+                ))}
+            </>
+          )}
+        </div>
+      )}
+
+      {status !== 'loading' && (
+        <div className="sm:hidden flex relative">
+          {session?.user ? (
+            <div className="flex">
               <Image
                 src={session?.user.image}
                 width={37}
                 height={37}
                 className="rounded-full"
                 alt="profile"
+                onClick={() => setToggleDropDown(prev => !prev)}
               />
-            </Link>
-          </div>
-        ) : (
-          <>
-            {providers &&
-              Object.values(providers).map(provider => (
-                <button
-                  type="button"
-                  key={provider.name}
-                  onClick={() => signIn(provider.id)}
-                  className="black_btn"
-                >
-                  Sign In
-                </button>
-              ))}
-          </>
-        )}
-      </div>
-
-      <div className="sm:hidden flex relative">
-        {session?.user ? (
-          <div className="flex">
-            <Image
-              src={session?.user.image}
-              width={37}
-              height={37}
-              className="rounded-full"
-              alt="profile"
-              onClick={() => setToggleDropDown(prev => !prev)}
-            />
-            {toggleDropDown && (
-              <div className="dropdown">
-                <Link
-                  href="/profile"
-                  className="dropdown_link"
-                  onClick={() => setToggleDropDown(false)}
-                >
-                  My Profile
-                </Link>
-                <Link
-                  href="/create-prompt"
-                  className="dropdown_link"
-                  onClick={() => setToggleDropDown(false)}
-                >
-                  Create Prompt
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setToggleDropDown(false);
-                    signOut();
-                  }}
-                  className="mt-5 w-full black_btn"
-                >
-                  Sign Out
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <>
-            {providers &&
-              Object.values(providers).map(provider => (
-                <button
-                  type="button"
-                  key={provider.name}
-                  onClick={() => signIn(provider.id)}
-                  className="black_btn"
-                >
-                  Sign In
-                </button>
-              ))}
-          </>
-        )}
-      </div>
+              {toggleDropDown && (
+                <div className="dropdown">
+                  <Link
+                    href="/profile"
+                    className="dropdown_link"
+                    onClick={() => setToggleDropDown(false)}
+                  >
+                    My Profile
+                  </Link>
+                  <Link
+                    href="/create-prompt"
+                    className="dropdown_link"
+                    onClick={() => setToggleDropDown(false)}
+                  >
+                    Create Prompt
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setToggleDropDown(false);
+                      signOut();
+                    }}
+                    className="mt-5 w-full black_btn"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              {providers &&
+                Object.values(providers).map(provider => (
+                  <button
+                    type="button"
+                    key={provider.name}
+                    onClick={() => signIn(provider.id)}
+                    className="black_btn"
+                  >
+                    Sign In
+                  </button>
+                ))}
+            </>
+          )}
+        </div>
+      )}
     </nav>
   );
 }

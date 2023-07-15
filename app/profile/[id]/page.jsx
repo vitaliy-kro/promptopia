@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 import Profile from '@components/Profile';
+import { PostsSkeleton } from '@components/PostsSkeleton';
 
 const UserProfile = ({ params }) => {
   const searchParams = useSearchParams();
@@ -11,9 +12,11 @@ const UserProfile = ({ params }) => {
 
   const [userPosts, setUserPosts] = useState({});
   const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchPosts = async () => {
+      setIsLoading(true);
       const response = await fetch(
         `/api/users/${params?.id}/posts?page=${page}`
       );
@@ -25,6 +28,7 @@ const UserProfile = ({ params }) => {
           totalPages: data.totalPages,
         };
       });
+      setIsLoading(false);
     };
 
     if (params?.id) fetchPosts();
@@ -46,6 +50,7 @@ const UserProfile = ({ params }) => {
           Load More
         </button>
       )}
+      {isLoading && <PostsSkeleton />}
     </>
   );
 };

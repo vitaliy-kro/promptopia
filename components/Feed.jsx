@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import PromptCardList from '@components/PromptCardList';
+import Loader from '@components/Loader';
+import { PostsSkeleton } from '@components/PostsSkeleton';
 
 function Feed() {
   const [page, setPage] = useState(1);
@@ -9,9 +11,12 @@ function Feed() {
   const [searchTimeout, setSearchTimeout] = useState(null);
   const [searchedResults, setSearchedResults] = useState([]);
   const [posts, setPosts] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   useEffect(() => {
     const fetchPosts = async () => {
+      setIsLoading(true);
       if (searchText) {
         return setSearchTimeout(
           setTimeout(async () => {
@@ -20,6 +25,7 @@ function Feed() {
             );
             const data = await res.json();
             setSearchedResults(data);
+            setIsLoading(false);
           }, 500)
         );
       }
@@ -33,12 +39,15 @@ function Feed() {
           totalPages: data.totalPages,
         };
       });
+      setIsLoading(false);
+      setIsLoadingMore(false);
     };
 
     fetchPosts();
   }, [page, searchText]);
 
   const handleLoadMore = () => {
+    setIsLoadingMore(true);
     setPage(prevState => prevState + 1);
   };
   const handleSearchChange = e => {
@@ -63,6 +72,8 @@ function Feed() {
           className="search_input peer"
         />
       </form>
+
+      {isLoading && <PostsSkeleton />}
       {searchText ? (
         <>
           <PromptCardList
@@ -77,6 +88,7 @@ function Feed() {
             handleTagClick={handleTagClick}
             page={page}
           />
+          {isLoadingMore && <Loader />}
           {posts.prompts && page !== posts.totalPages && (
             <button className="outline_btn" onClick={handleLoadMore}>
               Load More

@@ -1,8 +1,6 @@
 import PromptCard from '@components/PromptCard';
-import Loader from '@components/Loader';
 
 function Profile({ data, description, name, handleDelete, handleEdit }) {
-  console.log({ data });
   return (
     <section className="w-full">
       <h1 className="head_text text-left">
@@ -10,7 +8,7 @@ function Profile({ data, description, name, handleDelete, handleEdit }) {
       </h1>
       <p className="desc text-left">{description}</p>
       <div className="mt-10 prompt_layout">
-        {data?.prompts ? (
+        {data?.prompts &&
           data?.prompts?.map(post => (
             <PromptCard
               key={post._id}
@@ -18,10 +16,7 @@ function Profile({ data, description, name, handleDelete, handleEdit }) {
               handleEdit={() => handleEdit && handleEdit(post)}
               handleDelete={() => handleDelete && handleDelete(post)}
             />
-          ))
-        ) : (
-          <Loader />
-        )}
+          ))}
       </div>
     </section>
   );
