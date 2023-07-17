@@ -6,7 +6,7 @@ export const POST = async req => {
 
   try {
     await connectToDB();
-    const newPrompt = new Prompt({ creator: userId, prompt, tag });
+    const newPrompt = new Prompt({ creator: userId, prompt, tag, likes: [] });
 
     await newPrompt.save();
 

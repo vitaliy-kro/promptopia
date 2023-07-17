@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { usePathname, useRouter } from 'next/navigation';
 import { ROUTER_KEYS } from '@consts';
+import { toastError } from '@helpers/notifications';
 
 function PromptCard({ post, handleTagClick, handleEdit, handleDelete }) {
   const { data: session } = useSession();
@@ -12,6 +13,10 @@ function PromptCard({ post, handleTagClick, handleEdit, handleDelete }) {
   const router = useRouter();
 
   const [copied, setCopied] = useState('');
+  const [isLiked, setIsLiked] = useState(
+    session?.user?.id && post.likes.some(likeId => likeId === session.user.id)
+  );
+  const [likesCount, setLikesCount] = useState(post.likes.length);
 
   const handleCopy = () => {
     setCopied(post.prompt);
@@ -27,6 +32,29 @@ function PromptCard({ post, handleTagClick, handleEdit, handleDelete }) {
     router.push(
       `${ROUTER_KEYS.PROFILE}/${post.creator._id}?name=${post.creator.username}`
     );
+  };
+
+  const handeLikeClick = async () => {
+    try {
+      if (!session?.user) {
+        throw new Error('You need sign in for like posts!');
+      }
+      const res = await fetch(`/api/prompt/${post._id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          likedUserId: session?.user.id,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Something get wrong, try again!');
+      }
+      const data = await res.json();
+      setIsLiked(data.likes.some(likeId => likeId === session.user.id));
+      setLikesCount(data.likes.length);
+    } catch (e) {
+      toastError(e.message);
+    }
   };
 
   return (
@@ -66,12 +94,29 @@ function PromptCard({ post, handleTagClick, handleEdit, handleDelete }) {
         </div>
       </div>
       <p className="my-4 font-satoshi text-sm text-gray-700">{post.prompt}</p>
-      <p
-        className="font-inter text-sm blue_gradient cursor-pointer"
-        onClick={() => handleTagClick && handleTagClick(post.tag)}
-      >
-        {post.tag}
-      </p>
+      <div className="flex justify-between items-start">
+        <p
+          className="font-inter text-sm blue_gradient cursor-pointer"
+          onClick={() => handleTagClick && handleTagClick(post.tag)}
+        >
+          {post.tag}
+        </p>
+        <div className="flex justify-center items-center">
+          <p className="font-satoshi text-sm text-gray-700">{likesCount}</p>
+          <div className="like_btn" onClick={handeLikeClick}>
+            <Image
+              src={
+                isLiked
+                  ? '/assets/icons/liked.svg'
+                  : '/assets/icons/not-liked.svg'
+              }
+              alt="Like icon"
+              width={20}
+              height={20}
+            />
+          </div>
+        </div>
+      </div>
 
       {session?.user.id === post.creator._id && pathName === '/profile' && (
         <div className="mt-5 flex-center gap-4 border-t border-gray-100 pt-3">

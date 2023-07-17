@@ -16,7 +16,7 @@ export const GET = async (req, { params }) => {
 };
 
 export const PATCH = async (req, { params }) => {
-  const { prompt, tag } = await req.json();
+  const { prompt, tag, likedUserId } = await req.json();
 
   try {
     await connectToDB();
@@ -26,15 +26,36 @@ export const PATCH = async (req, { params }) => {
     if (!existingPrompt)
       return new Response('Prompt not found', { status: 404 });
 
-    existingPrompt.prompt = prompt;
-    existingPrompt.tag = tag;
+    if (prompt) {
+      existingPrompt.prompt = prompt;
+    }
+
+    if (tag) {
+      existingPrompt.tag = tag;
+    }
+
+    if (likedUserId) {
+      console.log({ existingPrompt: existingPrompt.likes });
+      likeStatusChange(likedUserId, existingPrompt.likes);
+    }
+
     await existingPrompt.save();
 
     return new Response(JSON.stringify(existingPrompt), { status: 200 });
   } catch (e) {
+    console.log(e);
     return new Response('Failed to update prompt', { status: 500 });
   }
 };
+
+function likeStatusChange(likedUserId, likesArray) {
+  if (likesArray.includes(likedUserId)) {
+    likesArray.splice(likesArray.indexOf(likedUserId), 1);
+    return likesArray;
+  }
+  likesArray.push(likedUserId);
+  return likesArray;
+}
 
 export const DELETE = async (req, { params }) => {
   try {

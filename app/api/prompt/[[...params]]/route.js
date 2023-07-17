@@ -28,6 +28,7 @@ export const GET = async req => {
     };
     const prompts = await Prompt.find(query)
       .populate('creator')
+      .sort({ likes: -1 })
       .skip(skip)
       .limit(limit);
     const countPages = await Prompt.countDocuments(query);
